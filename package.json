@@ -14,5 +14,10 @@
   "devDependencies": {
     "cross-env": "^7.0.3",
     "nodemon": "^2.0.22"
+  },
+  "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "axios": "^1.4.0",
+    "fluent-ffmpeg": "^2.1.2"
   }
 }
