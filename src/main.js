@@ -15,7 +15,8 @@ bot.on(message('voice'), async ctx => {
         const link = await ctx.telegram.getFileLink(ctx.message.voice.file_id)
         const userId = String(ctx.message.from.id)
         const oggPath = await ogg.create(link.href, userId)
-        await ctx.reply(JSON.stringify(link, null, 2))
+        const mp3Path = await ogg.convert(oggPath, userId)
+        await ctx.reply(mp3Path)
     } catch(e) {
         console.log(`Error while voice message`, e.message)
     }
@@ -23,7 +24,10 @@ bot.on(message('voice'), async ctx => {
     
 })
 bot.command('start', async (ctx) => {
-    await ctx.reply(`Привет, дорогой пользователь! \nЭто чат бот для общения с ChatGPT.\nТы можешь задать свой вопрос текстовым сообщением или записать аудиосообщение.\nДерзай!`)
+    await ctx.reply(`Привет, дорогой пользователь! 
+    \nЭто чат бот для общения с ChatGPT.
+    \nТы можешь задать свой вопрос текстовым сообщением или записать аудиосообщение.
+    \nДерзай!`)
 })
 
 

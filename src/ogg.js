@@ -1,42 +1,57 @@
 import ffmpeg from "fluent-ffmpeg";
-import {createWriteStream} from 'fs'
-import { dirname, resolve} from 'path'
+import installer from "@ffmpeg-installer/ffmpeg";
+import { createWriteStream } from "fs";
+import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
+import axios from "axios";
+import { rejects } from "assert";
+import { removeFile } from './utils.js'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
-class oggConverter {
-  constructor(inputFilePath, outputFilePath) {
-    this.inputFilePath = inputFilePath;
-    this.outputFilePath = outputFilePath;
+class OggConverter {
+  constructor() {
+    ffmpeg.setFfmpegPath(installer.path);
   }
 
-  convert() {
-    ffmpeg(this.inputFilePath)
-      .toFormat("mp3")
-      .on("error", (err) => {
-        console.log(`An erorr occured: $(err.message)`);
-      })
-      .on("end", () => {
-        console
-          .log("covertion completed successfully")
-          .save(this.outputFilePath);
-      });
-  }
-
-  async create(inputFilePath, outputFilePath) {
+  convert(oggPath, filename) {
     try {
-        const oggPath = resolve(__dirname, '../voices', `${filename}.ogg`)
-        const response = await axios({
-            method: 'get',
-            url,
-            responseType: 'stream',
-        })
-        const stream = createWriteStream(oggPath)
+      const mp3Path = resolve(dirname(oggPath), `${filename}.mp3`);
+      return new Promise((resolve, reject) => {
+        ffmpeg(oggPath)
+          .inputOption("-t 30")
+          .output(mp3Path)
+          .on("end", () => {
+            removeFile(oggPath);
+            resolve(mp3Path);
+          })
+          .on("error", (err) => reject(err.message))
+          .run();
+      });
     } catch (e) {
-        console.log('Error while creating ogg', e.message)
+      console.log("something goes wrong during converting", e.message);
     }
-  } 
+  }
+
+  async create(url, filename) {
+    try {
+      const oggPath = resolve(__dirname, "../voices", `${filename}.ogg`);
+      const response = await axios({
+        method: "get",
+        url,
+        responseType: "stream",
+      });
+      return new Promise((resolve) => {
+        const stream = createWriteStream(oggPath);
+        response.data.pipe(stream);
+        stream.on("finish", () => {
+          resolve(oggPath);
+        });
+      });
+    } catch (e) {
+      console.log("Error while creating ogg", e.message);
+    }
+  }
 }
 
 export const ogg = new OggConverter();
