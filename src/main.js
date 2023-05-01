@@ -1,39 +1,67 @@
-import { Telegraf } from 'telegraf'
-import { message } from 'telegraf/filters'
-import config from 'config'
-import { ogg } from './ogg.js'
+import { Telegraf } from "telegraf";
+import { message } from "telegraf/filters";
+import config from "config";
+import { code } from "telegraf/format";
+import { ogg } from "./ogg.js";
+import { openai } from "./openai.js";
 
-const bot = new Telegraf(config.get('TELEGRAM_TOKEN'))
+const bot = new Telegraf(config.get("TELEGRAM_TOKEN"));
 
-// bot.on(message('text'), async ctx => {
-//     await ctx.reply(JSON.stringify(ctx.message, null, 2))
-//     await ctx.reply("Hi, Kira")
-// })
-
-bot.on(message('voice'), async ctx => {
-    try {   
-        const link = await ctx.telegram.getFileLink(ctx.message.voice.file_id)
-        const userId = String(ctx.message.from.id)
-        const oggPath = await ogg.create(link.href, userId)
-        const mp3Path = await ogg.convert(oggPath, userId)
-        await ctx.reply(mp3Path)
-    } catch(e) {
-        console.log(`Error while voice message`, e.message)
-    }
-
-    
-})
-bot.command('start', async (ctx) => {
+bot.command("start", async (ctx) => {
     await ctx.reply(`Привет, дорогой пользователь! 
-    \nЭто чат бот для общения с ChatGPT.
-    \nТы можешь задать свой вопрос текстовым сообщением или записать аудиосообщение.
-    \nДерзай!`)
-})
+      \nЭто чат бот для общения с ChatGPT.
+      \nТы можешь задать свой вопрос текстовым сообщением или записать аудиосообщение.
+      \nДерзай!`);
+  });
+  
+  bot.command('prompt', async (ctx) => {
+      ctx.reply("picture")
+  })
+
+bot.on(message("voice"), async (ctx) => {
+  try {
+    await ctx.reply(code("Сообщение принял, думаю..."));
+
+    const link = await ctx.telegram.getFileLink(ctx.message.voice.file_id);
+    const userId = String(ctx.message.from.id);
+    const oggPath = await ogg.create(link.href, userId);
+    const mp3Path = await ogg.convert(oggPath, userId);
+
+    const text = await openai.transcription(mp3Path);
+    await ctx.reply(code(`Ваш запрос: ${text}`));
+
+    const messages = [{ role: openai.roles.USER, content: text }];
+    const response = await openai.chat(messages);
+
+    await ctx.reply(response.content);
+  } catch (e) {
+    console.log(`Error while voice message`, e.message);
+  }
+});
+
+bot.on(message("text"), async (ctx) => {
+  try {
+    await ctx.reply(code("Сообщение принял, думаю..."));
+
+    const text = await ctx.message.text;
+    const userId = String(ctx.message.from.id);
+
+    console.log(text)
+
+    await ctx.reply(code(`Ваш запрос: ${text}`));
+
+    const messages = [{ role: openai.roles.USER, content: text }];
+    const response = await openai.chat(messages);
+
+    await ctx.reply(response.content);
+  } catch (e) {
+    console.log(`Error while text message`, e.message);
+  }
+});
 
 
 
-bot.launch()
+bot.launch();
 
-process.once('SIGINT', () => bot.stop('SIGINT'))
-process.once('SIGTERM', () => bot.stop('SIGTERM'))
-
+process.once("SIGINT", () => bot.stop("SIGINT"));
+process.once("SIGTERM", () => bot.stop("SIGTERM"));
