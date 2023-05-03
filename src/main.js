@@ -8,15 +8,21 @@ import { openai } from "./openai.js";
 const bot = new Telegraf(config.get("TELEGRAM_TOKEN"));
 
 bot.command("start", async (ctx) => {
-    await ctx.reply(`Привет, дорогой пользователь! 
+  await ctx.reply(`Привет, дорогой пользователь! 
       \nЭто чат бот для общения с ChatGPT.
       \nТы можешь задать свой вопрос текстовым сообщением или записать аудиосообщение.
       \nДерзай!`);
-  });
-  
-  bot.command('prompt', async (ctx) => {
-      ctx.reply("picture")
-  })
+});
+
+bot.command("prompt", async (ctx) => {
+  try {
+    const text = await ctx.reply(ctx.message.text.slice(8))
+    console.log(text)
+
+  } catch(e) {
+    console.log("Something wrong with your prompt request". e.message)
+  }
+});
 
 bot.on(message("voice"), async (ctx) => {
   try {
@@ -46,7 +52,7 @@ bot.on(message("text"), async (ctx) => {
     const text = await ctx.message.text;
     const userId = String(ctx.message.from.id);
 
-    console.log(text)
+    console.log(text);
 
     await ctx.reply(code(`Ваш запрос: ${text}`));
 
@@ -58,8 +64,6 @@ bot.on(message("text"), async (ctx) => {
     console.log(`Error while text message`, e.message);
   }
 });
-
-
 
 bot.launch();
 
