@@ -35,7 +35,8 @@ bot.command("prompt", async (ctx) => {
     console.log(images)
 
   } catch(e) {
-    console.log("Something wrong with your prompt request". e.message)
+    console.log("Something wrong with your prompt request")
+    ctx.reply("Похоже запрос неподходящий")
   }
 });
 
