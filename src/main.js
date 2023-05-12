@@ -29,28 +29,15 @@ bot.command("start", async (ctx) => {
 
 bot.command("prompt", async (ctx) => {
   try {
-    const text = await ctx.reply(ctx.message.text.slice(8).trim())
-    console.log(text)
+    const images = await openai.get_picture(ctx.message.text.slice(8).trim())
+    await ctx.replyWithPhoto({url: images.data[0].url})
+    await ctx.replyWithPhoto({url: images.data[1].url})
+    console.log(images)
 
   } catch(e) {
     console.log("Something wrong with your prompt request". e.message)
   }
 });
-
-// bot.command('sendall', async (ctx) => {
-//   let message = `Привет, пользователь, \n что-то ты давно меня ни о чем не спрашивал!`;
-
-//   // Получаем список всех пользователей
-//   let users = await bot.telegram.getChatMembersCount(ctx.chat.id);
-
-//   // Отправляем сообщение каждому пользователю
-//   for (let i = 0; i < users; i++) {
-//     await bot.telegram.sendMessage(ctx.chat.id, message);
-//   }
-
-//   // Отправляем уведомление пользователю, отправившему команду
-//   await ctx.reply('Сообщение было отправлено всем пользователям бота!');
-// });
 
 
 bot.on(message("voice"), async (ctx) => {

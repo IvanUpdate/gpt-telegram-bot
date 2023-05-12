@@ -40,6 +40,20 @@ class OpenAI {
             console.log("Something goes wrong during transcription", e.message)
         }
     }
+
+    async get_picture(description) {
+        try {
+            const response = await this.openai.createImage({
+                prompt: description,
+                n: 2,
+                size: '1024x1024'
+            })
+            console.log(response.data)
+            return response.data
+        } catch (e) {
+            console.log("Something goes wrong with image request", e.message)
+        }
+    }
 }
 
 export const openai = new OpenAI(config.get("OPENAI_KEY"))
