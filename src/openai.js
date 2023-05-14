@@ -25,7 +25,7 @@ class OpenAI {
             })
             return response.data.choices[0].message
         } catch (e) {
-            console.log('Error with chat gpt', e.message)
+            console.log('Error with chat gpt')
         }
     }
 
@@ -37,7 +37,7 @@ class OpenAI {
             );
             return response.data.text
         } catch (e) {
-            console.log("Something goes wrong during transcription", e.message)
+            console.log("Something goes wrong during transcription")
         }
     }
 
@@ -51,7 +51,7 @@ class OpenAI {
             console.log(response.data)
             return response.data
         } catch (e) {
-            console.log("Something goes wrong with image request", e.message)
+            console.log("Something goes wrong with image request")
         }
     }
 }
