@@ -42,7 +42,7 @@ bot.command("prompt", async (ctx) => {
 
 
 bot.on(message("voice"), async (ctx) => {
-  ctx.session ??= INITIAL_SESSION
+  ctx.session = ctx.session || INITIAL_SESSION;
   try {
     await ctx.reply(code("Сообщение принял, думаю..."));
 
@@ -79,6 +79,8 @@ bot.on(message("text"), async (ctx) => {
 
     ctx.session.messages.push({ role: openai.roles.USER, content: text });
     const response = await openai.chat(ctx.session.messages);
+    console.log(response.content)
+    console.log(response)
 
     // if response
     ctx.session.messages.push({ role: openai.roles.ASSISTANT, content: response.content });
